@@ -1,0 +1,82 @@
+---
+title: "pepeCash"
+author: "Sam Reeves"
+date: "2/5/2021"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Description
+
+## Introducing PEPECASH, a strange AltCoin based on the popular meme Pepe the Frog.
+
+$$\\[0.2in]$$
+Various trading card assets immortalized in the blockchain are issued, and people purchase them with PEPECASH.  Each "Rare Pepe" features a different version of Pepe.  This is a fork of BTCPAY Market v0.3.1.  Visit rarepepedirectory.com for a full list of these signifiers of completely useless value.
+
+$$\\[0.2in]$$
+All data comes from the FiveThirtyEight githup repo data/rare-pepes/
+
+More information: https://fivethirtyeight.com/features/pepe-the-frog-symbolism-cryptoart-blockchain/
+
+For donations: 1AZ3D1fpaoGFyLREcxz9VxwqMxvwra17he
+$$\\[0.2in]$$
+```{r message=FALSE, warning=FALSE}
+library(tidyverse)
+library(lubridate)
+```
+
+
+```{r}
+blocks <- read.csv("https://github.com/fivethirtyeight/data/raw/master/rare-pepes/blocks_timestamps.csv")
+orderMatches <- read.csv("https://github.com/fivethirtyeight/data/raw/master/rare-pepes/ordermatches_all.csv")
+```
+
+\pagebreak
+
+# Exploration of Rare Pepes
+
+Let's take a look at the data.  We have a list of all 26,038 orders filled between Sept 9, 2016 and February 2, 2018.  
+
+It is evident that people actually purchased PEPECASH with an accepted cryptocurrency, then they blew it on a set of 1438 distinct Rare Pepes.
+
+```{r}
+glimpse(orderMatches)
+
+as_datetime(head(blocks$Timestamp, n=1))
+as_datetime(tail(blocks$Timestamp, n=1))
+
+pepeCount <- orderMatches %>% count(ForwardAsset)
+
+length(pepeCount[[1]])
+```
+
+# What are the most significant Rare Pepes in the set?
+## Most often purchased Rare Pepes:
+```{r}
+head(arrange(pepeCount, desc(n)), n=10)
+```
+
+http://rarepepedirectory.com/wp-content/uploads/2016/09/pepecash3.jpg
+
+
+## Largest single Rare Pepe orders
+
+All minted PEPEHEXCHANT tokens were purchased at once.  Presumably, participants felt that these would Rare Pepes with the largest order quantities would become coveted collectors' items.
+```{r}
+head(arrange(orderMatches, desc(ForwardQuantity)), n=10)
+```
+Warning: extremely bad content! 
+
+http://rarepepedirectory.com/wp-content/uploads/2016/10/PEPEHEXCHANT.jpg
+
+```{r}
+ggplot(orderMatches, aes(x = Block, y = ForwardQuantity)) + geom_jitter()
+```
+
+# Conclusions:
+
+Rare Pepes were kind of taken over by alt-right nutjobs.  The meme is no longer just a silly comic, and so, PEPECASH will likely never be a significant mainstream coin.  Though the project continues, it can be considered dead for practical purposes.  Early on, people were willing to buy large quantities of these tokens, but the purchases never caught on.
+
