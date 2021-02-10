@@ -2,7 +2,7 @@
 title: "pepeCash"
 author: "Sam Reeves"
 date: "2/5/2021"
-output: pdf_document
+output: html_document
 ---
 
 ```{r setup, include=FALSE}
