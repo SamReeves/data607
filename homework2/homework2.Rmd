@@ -1,0 +1,44 @@
+---
+title: "Lab2"
+author: "Sam Reeves"
+date: "2/10/2021"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+# Description
+
+This is an analysis of Sean Connin's film survey.
+
+Let's start by importing useful libraries, downloading the data, and populating the database.
+```{r}
+library(DBI)
+library(rvest)
+
+data607film <- read.csv("https://raw.githubusercontent.com/TheWerefriend/data607/master/homework2/data607film.csv")
+colnames(data607film) <- c("timestamp",
+                           "theQueensGambit",
+                           "emilyInParis",
+                           "lucifer",
+                           "theUmbrellaAcademy", 
+                           "moneyHeist",
+                           "darkDesire",
+                           "friends",
+                           "theCrown",
+                           "ratched",
+                           "dark",
+                           "genreFavorites",
+                           "genreDislike",
+                           "weeklyNetflixHours",
+                           "recommendation")
+
+```
+
+```{r}
+con <- dbConnect(RSQLite::SQLite(), ":memory")
+dbWriteTable(con, "film", data607film)
+dbListTables(con)
+```
+
