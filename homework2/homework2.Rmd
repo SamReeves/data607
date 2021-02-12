@@ -1,5 +1,5 @@
 ---
-title: "Lab2"
+title: "Homework 2"
 author: "Sam Reeves"
 date: "2/10/2021"
 output: pdf_document
@@ -10,35 +10,155 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 # Description
 
-This is an analysis of Sean Connin's film survey.
+### This is an analysis of Sean Connin's film survey.  Metadata is taken from imdb, metacritic, and wikipedia.
 
-Let's start by importing useful libraries, downloading the data, and populating the database.
-```{r}
+
+## Import libraries, and download the data.
+Check for any null values.
+```{r warning = FALSE, message = FALSE}
 library(DBI)
 library(rvest)
+library(tidyverse)
 
 data607film <- read.csv("https://raw.githubusercontent.com/TheWerefriend/data607/master/homework2/data607film.csv")
-colnames(data607film) <- c("timestamp",
-                           "theQueensGambit",
-                           "emilyInParis",
-                           "lucifer",
-                           "theUmbrellaAcademy", 
-                           "moneyHeist",
-                           "darkDesire",
-                           "friends",
-                           "theCrown",
-                           "ratched",
-                           "dark",
-                           "genreFavorites",
-                           "genreDislike",
-                           "weeklyNetflixHours",
-                           "recommendation")
-
+filmMeta <- read.csv("https://raw.githubusercontent.com/TheWerefriend/data607/master/homework2/filmMeta.csv")
+alias <- c("theQueensGambit", "emilyInParis", "lucifer", "theUmbrellaAcademy",
+           "moneyHeist", "darkDesire", "friends", "theCrown", "ratched", "dark")
+colnames(data607film) <- c("timestamp", alias, "genreFavorites", "genreDislike",
+                           "weeklyNetflixHours", "recommendation")
+filmMeta <- cbind(alias, filmMeta)
+anyNA(data607film)
+anyNA(filmMeta)
 ```
+## Remove null values and check again:
+
+```{r}
+data607film <- na.omit(data607film)
+filmMeta <- na.omit(filmMeta)
+anyNA(data607film)
+anyNA(filmMeta)
+```
+## Start a SQLite database and write the tables to it.
 
 ```{r}
 con <- dbConnect(RSQLite::SQLite(), ":memory")
-dbWriteTable(con, "film", data607film)
-dbListTables(con)
+dbWriteTable(con, "film", data607film, overwrite=TRUE)
+dbWriteTable(con, "meta", filmMeta, overwrite=TRUE)
 ```
 
+## Pull the data from the tables, close the database connection.
+
+```{r}
+film_table <- data.frame(dbGetQuery(con, "SELECT * FROM film"))
+meta_table <- data.frame(dbGetQuery(con, "SELECT * FROM meta"))
+dbDisconnect(con)
+```
+## Focus on the heavy watchers, people who watch at least the median amount of weekly netflix.  Remove the columns without metadata.
+```{r}
+heavy_watchers <- film_table %>% 
+  filter(weeklyNetflixHours >= median(weeklyNetflixHours)) %>%
+  arrange(desc(weeklyNetflixHours))
+
+heavy_watchers <- within(heavy_watchers, rm(moneyHeist, darkDesire))
+```
+
+## Order the opinion responses.
+```{r}
+values = c(0:5)
+opinions = c("No opinion - I haven't seen it",
+             "Poor", "Fair", "Average", "Good",
+             "Excellent")
+names(values) = opinions
+heavy_opinions <- heavy_watchers[,2:9]
+
+```
+
+## Are the number of votes on IMDB correlated with the IMDB rating?
+```{r}
+cor(meta_table$imdbVotes,
+    meta_table$imdbRating)
+```
+
+## Are the Metacritic scores correlated with the Metacritic user rating?
+```{r}
+cor(meta_table$metacriticScore,
+    meta_table$metacriticRating*10)
+```
+
+## Get number of responses, average response, then a score out of 10 for each.
+```{r}
+responses <- c()
+average <- c()
+out_of_ten <- c()
+
+# values[heavy_opinions[i]]
+# for opinion levels
+
+for (i in heavy_opinions) {
+  tally = 0
+  for (v in i) {
+    if (v != "No opinion - I haven't seen it") {
+      tally <- tally + 1 }
+  }
+  responses <- append(responses, tally)
+  average <- append(average,
+                    sum(as.numeric(values[i]))/tally)
+  out_of_ten <- append(out_of_ten, tail(average, 1)*2)
+}
+```
+
+## Consolidate data
+```{r}
+data <- t(meta_table) %>%
+  rbind(responses) %>%
+  rbind(average) %>%
+  rbind(out_of_ten)
+
+# First row to column names
+colnames(data) <- data[1,]
+data <- data[-1,]
+```
+
+## Nobody watched The Crown.
+```{r}
+heavy_opinions <- heavy_opinions[,-6]
+data <- data[,-6]
+
+rows <- rownames(data)[-c(1,6)] 
+```
+
+## Are the class averages close to the web ratings?
+```{r}
+cor(as.numeric(data['average',]), as.numeric(data['imdbRating',]))
+cor(as.numeric(data['average',]), as.numeric(data['metacriticScore',]))
+```
+## Are class response rates correlated with the number of IMDB ratings?
+```{r}
+cor(as.numeric(data['responses',]), as.numeric(data['imdbVotes',]))
+```
+
+## What are the average differences between class scores and metacritic ratings on a 1-10 scale?
+```{r}
+meta_corr <- c()
+count = 1
+for (i in heavy_opinions) {
+  tally <- 0
+  differences <- c()
+  for (v in i) {
+    if (v != "No opinion - I haven't seen it") {
+      tally <- tally + 1
+      diff <- abs(as.numeric(data["metacriticRating", count]) - as.numeric(values[v])*2)
+      differences <- c(differences, diff)
+    }
+  }
+  meta_corr <- c(meta_corr, mean(differences))
+  count <- count + 1
+}
+
+meta_corr
+```
+# Conclusions
+
+Eerybody likes Friends.  Our class "I've seen it" levels are somewhat correlated with the total numbers of votes sent to IMDB.  IMDB ratings are indicative of IMDB popularity.  Our class agrees a bit with IMDB ratings, and both disagree a bit with Metacritic.  Class opinions were most divergent with Metacritic over Friends and The Queen's Gambit, and the least divergent on The Umbrella Academy.
+
+### People in our sample who saw The Umbrella Academy have weird taste.
