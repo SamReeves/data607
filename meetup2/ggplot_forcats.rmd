@@ -1,0 +1,89 @@
+---
+title: 'tidyverse: using forcats to improve your ggplots'
+author: "catlin"
+date: "2/10/2021"
+output: html_document
+---
+
+Note that although forcats is part of the "tidyverse", it is not automatically loaded when you run `library(tidyverse)`
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(forcats)
+```
+
+# Handy forcats functions for ggplot2
+
+## Comparing followers of world religions
+
+Source: https://en.wikipedia.org/wiki/List_of_religious_populations
+
+I was looking for a simple dataset with count data for many items to demonstrate some basic forcats functions that are useful when creating plots.
+
+```{r, warning=FALSE}
+religions = read_csv("https://raw.githubusercontent.com/acatlin/data/master/religions.csv", 
+                  col_names = FALSE) %>% 
+    rename(religion = X1, followers = X2) %>% 
+    mutate(millions_of_followers = followers/1000000.0) %>% 
+  select(religion, millions_of_followers)
+
+religions
+```
+
+## Version 1: basic ggplot
+
+Q: What are the most followed religions?
+A: Use ggplot to compare religious populations
+
+You can also embed plots, for example:
+
+```{r}
+religions %>% 
+  ggplot(aes(x = religion, y = millions_of_followers)) + 
+    geom_col(fill = "lightblue") + 
+    labs(x = "religion", y = "millions of followers", 
+           caption = "https://en.wikipedia.org/wiki/List_of_religious_populations") 
+```
+## Version 2: flip coordinates
+
+```{r}
+religions %>% 
+  ggplot(aes(x = religion, y = millions_of_followers)) + 
+    geom_col(fill = "lightblue") + 
+    labs(x = "religion", y = "millions of followers", 
+           caption = "https://en.wikipedia.org/wiki/List_of_religious_populations") + coord_flip()
+```
+## Version 3: change sort order
+Q: How do we change the chart to show the most followed religions first?
+A: Use forcats::fct_reorder()
+
+```{r}
+library(forcats) 
+
+ggplot(religions, aes(x = fct_reorder(religion, millions_of_followers), 
+                      y = millions_of_followers)) + 
+  geom_col(fill = "lightblue") + 
+  labs(x = "religion", y = "millions of followers", 
+      caption = "https://en.wikipedia.org/wiki/List_of_religious_populations") + 
+  coord_flip()
+```
+
+## Version 4: combining less frequently used categories
+
+Q: How do we combine the less-followed religions into a single group?
+A: Use forcats::fct_other()
+
+```{r}
+top5 = unlist(select(head(arrange(religions, desc(millions_of_followers)), 5), religion))
+
+religions %>% 
+  mutate(religion = fct_other(religion, keep = top5, other_level = "Other religions")) %>%     
+  ggplot(aes(x = fct_reorder(religion, millions_of_followers), y = millions_of_followers)) +
+    geom_col(fill = "lightblue") + 
+    labs(x = "religion", y = "millions of followers", 
+        caption = "https://en.wikipedia.org/wiki/List_of_religious_populations") + 
+        coord_flip()
+```
+

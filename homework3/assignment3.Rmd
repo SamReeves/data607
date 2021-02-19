@@ -1,0 +1,64 @@
+---
+title: "Week 3 Assignment"
+author: "Sam Reeves"
+date: "2/17/2021"
+output:
+  html_document: default
+---
+### 1. Using the 173 majors listed in fivethirtyeight.com’s College Majors dataset, provide code that identifies the majors that contain either "DATA" or "STATISTICS"
+
+```{r}
+library(magrittr)
+library(stringr)
+url <- "https://raw.githubusercontent.com/fivethirtyeight/data/master/college-majors/majors-list.csv"
+
+data <- data.frame(read.csv(url))
+
+data$Major[which(str_detect(data$Major, "DATA"))]
+data$Major[which(str_detect(data$Major, "STATISTICS"))]
+```
+
+### 2. Write code that transforms the data below:
+
+[1] "bell pepper"  "bilberry"     "blackberry"   "blood orange"
+[5] "blueberry"    "cantaloupe"   "chili pepper" "cloudberry"  
+[9] "elderberry"   "lime"         "lychee"       "mulberry"    
+[13] "olive"        "salal berry"
+
+Into a format like this:
+
+c("bell pepper", "bilberry", "blackberry", "blood orange", "blueberry", "cantaloupe", "chili pepper", "cloudberry", "elderberry", "lime", "lychee", "mulberry", "olive", "salal berry")
+
+```{r}
+x <- '[1] "bell pepper"  "bilberry"     "blackberry"   "blood orange"  
+[5] "blueberry"    "cantaloupe"   "chili pepper" "cloudberry"  
+[9] "elderberry"   "lime"         "lychee"       "mulberry"    
+[13] "olive"        "salal berry"'
+
+y <- str_remove_all(unlist(str_extract_all(x, '"[a-z]*\\s*[a-z]*"')), '\"')
+y
+```
+
+### 3. Describe, in words, what these expressions will match:
+
+* (.)\1\1
+  + Any tripled character.
+* "(.)(.)\\2\\1"
+  + Any two characters followed by \2\1, all inside of quotes.
+* (..)\1
+  + Any pair of characters repeated.
+* "(.).\\1.\\1"
+  + Any two characters followed by \1, any character, and \1 all in quotes.
+* "(.)(.)(.).*\\3\\2\\1"
+  + Any character followed by any character, followed by any character, followed by any number of random characters, followed by \3\2\1, all in quotes.
+
+### 4. Construct regular expressions to match words that:
+
+* Start and end with the same character
+  + \b([a-z])\w*\1\b
+* Contain a repeated pair of letters (eg "church" contains "ch" repeated twice.)
+  + \b\w*([a-z]{2})\w*\1\w*\b
+* Contain one letter repeated in at least three places (eg. "eleven" contains three e's.)
+  + \b\w*([a-z])\w*\1\w*\1\w*\b
+
+
