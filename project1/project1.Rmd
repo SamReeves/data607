@@ -1,0 +1,35 @@
+---
+title: "Project1"
+author: "Sam Reeves"
+date: "2/28/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Chess Tournament Cross-Table Analysis 
+
+Given a .txt file with the results and player statistics of a single small tournament, output a .csv with some more information.
+
+--------------------------------------------------------------------
+
+### Load libraries and Data
+
+### Data Extraction
+
+1. Create data frame with columns:
+  1. Player Name
+  2. Prerating
+  3. Postrating
+  4. Opponent Name 1 - 8 (or bye/forfeit)
+  
+### Data Analysis
+
+2. Add columns with computed data:
+  1. Average Opponent Prerating
+  2. Expected Performance
+  3. Actual Performance vs. Expected
+  
+### Output the data
