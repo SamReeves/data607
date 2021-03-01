@@ -201,28 +201,72 @@ summary {
 <hr />
 <div id="load-libraries-and-data" class="section level3">
 <h3>Load libraries and Data</h3>
+<pre class="r"><code>library(stringr)
+url &lt;- &quot;https://raw.githubusercontent.com/TheWerefriend/data607/master/project1/tournamentinfo.txt&quot;
+text &lt;- read.delim(url, skip = 3)</code></pre>
 </div>
 <div id="data-extraction" class="section level3">
 <h3>Data Extraction</h3>
+<p>Create basic vectors:</p>
 <ol style="list-style-type: decimal">
-<li>Create data frame with columns:</li>
 <li>Player Name</li>
-<li>Prerating</li>
-<li>Postrating</li>
-<li>Opponent Name 1 - 8 (or bye/forfeit)</li>
+<li>State</li>
+<li>Points</li>
+<li>PreRating</li>
+<li>PostRating</li>
+<li>List of Opponents</li>
 </ol>
+<pre class="r"><code>name &lt;- c()
+state &lt;- c()
+points &lt;- c()
+preR &lt;- c()
+postR &lt;- c()
+opp &lt;- c()
+
+for (line in text) {
+  name &lt;- c(name, str_extract(line, &quot;[A-Z][A-Z]+ [A-Z ]+&quot;))
+  state &lt;- c(state, str_extract(line, &quot; [A-Z]{2} \\|&quot;))
+  points &lt;- c(points, str_extract(line, &quot;\\d\\.\\d&quot;))
+  preR &lt;- c(preR, str_extract(line, &quot;R: +\\d{3,4}&quot;))
+  postR &lt;- c(postR, str_extract(line, &quot;\\&gt; *\\d{3,4}&quot;))
+  opp &lt;- c(opp, str_extract_all(line, &quot;\\d{1,2}\\|&quot;))
+}
+
+name &lt;- name[!is.na(name)]
+state &lt;- substr(state[!is.na(state)], 2, 3)
+points &lt;- points[!is.na(points)]
+
+preR &lt;- regmatches(preR[!is.na(preR)], gregexpr(&quot;[[:digit:]]&quot;, preR[!is.na(preR)]))
+preR &lt;- sapply(preR, paste0, collapse = &quot;&quot;)
+
+postR &lt;- regmatches(postR[!is.na(postR)],
+                    gregexpr(&quot;[[:digit:]]&quot;, postR[!is.na(postR)]))
+postR &lt;- sapply(postR, paste0, collapse = &quot;&quot;)
+
+opp &lt;- opp[seq(1, 192, 3)]
+opp &lt;- lapply(opp, gsub, pattern = &quot;\\|&quot;, replacement = &quot;&quot;)</code></pre>
 </div>
-<div id="data-analysis" class="section level3">
-<h3>Data Analysis</h3>
-<ol start="2" style="list-style-type: decimal">
-<li>Add columns with computed data:</li>
-<li>Average Opponent Prerating</li>
-<li>Expected Performance</li>
-<li>Actual Performance vs. Expected</li>
+<div id="data-creation" class="section level3">
+<h3>Data Creation</h3>
+<p>Create vectors with computed data:</p>
+<ol style="list-style-type: decimal">
+<li>Average Opponent PreRating</li>
+<li>I’m so sorry; it’s far too late to do the EC problems…. I needed to practice RegEx more than I needed to practice ELO calculation. I feel ashamed, but also too tired to continue.</li>
 </ol>
+<pre class="r"><code>avgPreR &lt;- c()
+for (i in seq_along(name)) {
+  total &lt;- 0
+  for (opponent in opp[[i]]) {
+    id &lt;- as.numeric(opponent)
+    total &lt;- total + as.numeric(preR[[id]])
+  }
+  avgPreR &lt;- c(avgPreR, round(total / length(opp[[i]]), digits = 0))
+}</code></pre>
 </div>
 <div id="output-the-data" class="section level3">
 <h3>Output the data</h3>
+<pre class="r"><code>data &lt;- data.frame(name, state, points, preR, postR, avgPreR)
+write.csv(data, &quot;tournament.csv&quot;)</code></pre>
 </div>
 </div>
 

@@ -17,19 +17,79 @@ Given a .txt file with the results and player statistics of a single small tourn
 
 ### Load libraries and Data
 
+```{r}
+library(stringr)
+url <- "https://raw.githubusercontent.com/TheWerefriend/data607/master/project1/tournamentinfo.txt"
+text <- read.delim(url, skip = 3)
+```
+
+
 ### Data Extraction
 
-1. Create data frame with columns:
-  1. Player Name
-  2. Prerating
-  3. Postrating
-  4. Opponent Name 1 - 8 (or bye/forfeit)
-  
-### Data Analysis
+Create basic vectors:
 
-2. Add columns with computed data:
-  1. Average Opponent Prerating
-  2. Expected Performance
-  3. Actual Performance vs. Expected
-  
+  1. Player Name
+  2. State
+  3. Points
+  2. PreRating
+  3. PostRating
+  4. List of Opponents
+
+```{r}
+name <- c()
+state <- c()
+points <- c()
+preR <- c()
+postR <- c()
+opp <- c()
+
+for (line in text) {
+  name <- c(name, str_extract(line, "[A-Z][A-Z]+ [A-Z ]+"))
+  state <- c(state, str_extract(line, " [A-Z]{2} \\|"))
+  points <- c(points, str_extract(line, "\\d\\.\\d"))
+  preR <- c(preR, str_extract(line, "R: +\\d{3,4}"))
+  postR <- c(postR, str_extract(line, "\\> *\\d{3,4}"))
+  opp <- c(opp, str_extract_all(line, "\\d{1,2}\\|"))
+}
+
+name <- name[!is.na(name)]
+state <- substr(state[!is.na(state)], 2, 3)
+points <- points[!is.na(points)]
+
+preR <- regmatches(preR[!is.na(preR)], gregexpr("[[:digit:]]", preR[!is.na(preR)]))
+preR <- sapply(preR, paste0, collapse = "")
+
+postR <- regmatches(postR[!is.na(postR)],
+                    gregexpr("[[:digit:]]", postR[!is.na(postR)]))
+postR <- sapply(postR, paste0, collapse = "")
+
+opp <- opp[seq(1, 192, 3)]
+opp <- lapply(opp, gsub, pattern = "\\|", replacement = "")
+```
+
+### Data Creation
+
+Create vectors with computed data:
+
+  1. Average Opponent PreRating
+  2. I'm so sorry; it's far too late to do the EC problems.... I needed to practice RegEx more than I needed to practice ELO calculation.  I feel ashamed, but also too tired to continue.
+
+```{r}
+avgPreR <- c()
+for (i in seq_along(name)) {
+  total <- 0
+  for (opponent in opp[[i]]) {
+    id <- as.numeric(opponent)
+    total <- total + as.numeric(preR[[id]])
+  }
+  avgPreR <- c(avgPreR, round(total / length(opp[[i]]), digits = 0))
+}
+```
+
 ### Output the data
+
+```{r}
+data <- data.frame(name, state, points, preR, postR, avgPreR)
+write.csv(data, "tournament.csv")
+```
+
