@@ -1,0 +1,43 @@
+---
+title: "tidyingAndTransforming"
+author: "Sam Reeves"
+date: "3/5/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Load libraries and import .csv
+```{r message=FALSE}
+library(tidyr)
+library(dplyr)
+dat <- read.csv("numbersense.csv")
+```
+
+# Reshape the data
+
+Separate the two airlines, and create another column of totals.  Create a tibble with all the data, and preserve the city names as a column.
+```{r}
+alaska <- t(dat[1:2, 3:7])
+am_west <- t(dat[4:5, 3:7])
+totals <- alaska + am_west
+
+flight_info <- cbind(alaska, am_west, totals)
+colnames(flight_info) <- c("AL_OT", "AL_D", "AM_OT", "AM_D", "TOT_OT", "TOT_D")
+fi <- tibble::rownames_to_column(as.data.frame(flight_info), "cities") %>%
+  tibble()
+```
+
+# Summarize the data
+
+```{r}
+fi %>%
+  summarize(total_percentage = (TOT_D / (TOT_OT + TOT_D)),
+            AL_percentage = (AL_D / (AL_OT + AL_D)),
+            AM_percentage = (AM_D / (AM_OT + AM_D)))
+```
+# Conclusions
+
+Phoenix has the lowest percentage of delayed flights in comparison with the other cities.  Northern cities have a higher percentage of delays for both airlines.  Alaska has lower delay percentages than AM West for every single city.

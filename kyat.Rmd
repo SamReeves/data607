@@ -1,0 +1,88 @@
+---
+title: "Data Science in Context"
+author: "Sam Reeves"
+date: "3/2/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Kyats: The Worst Currency Ever
+
+Kyat is the national currency in Myanmar.  The Central Bank of Myanmar sets 1 daily exchange rate each for 38 currencies.  Some days it does not issue a new rate.
+
+The country has no real credit system.  I once helped my friend's father make a down payment on some real estate...  We borrowed 7 garbage bags full of cash from two of the larger banks and literally carried them down the street to a third bank, who issued what might be called a mortgage.
+
+All imports are purchased with USD, exchanged at official money changers, big banks, or the black market for gold and cash.  Most people use a combination of these, and the rates generally average around the official ones.
+
+### Load libraries and import the exchange rate data.
+
+```{r message=FALSE}
+library(dplyr)
+library(zoo)
+```
+
+We use na.locf() from "zoo" to replace null values with the previous non-null value.  Trading generally continues even if a new rate has not been released.
+
+```{r}
+rates <- read.csv(
+  "https://raw.githubusercontent.com/TheWerefriend/exchange-rate-prediction/master/rates.csv") %>%
+  na.locf()
+
+colnames(rates)[colnames(rates) == "X"] <- "date"
+rates <- mutate(rates, date=as.Date(date[[1]]))
+str(rates)
+```
+
+### Define input and output variables. 
+
+Every rate is considered an independent variable, and the target variable is the rate for "USD" with a predefined lag duration.  Take out the date.
+
+```{r}
+xAndY <- function(days = 1, input = rates) {
+  x <- input[1:(nrow(input)-days), 2:39]
+  return(mutate(x, y = input[(days+1):nrow(input), "USD"]))
+}
+```
+
+### We split the data into training and test sets...
+
+```{r}
+dataSplit <- function(data, ratio = 0.7) {
+  n <- nrow(data) * ratio
+  train <- data[1:n,]
+  test <- data[(n+1):nrow(data),]
+  return(list(train, test))
+}
+```
+
+### Fit the model.
+... and check a summary of what happened.
+
+```{r}
+data <- xAndY(5) %>% dataSplit()
+model <- lm(formula = y ~ ., data = data[[1]])
+summary(model)
+```
+
+According to this summary, the list of currencies with a high R squared value is:
+
+BDT, BND, CAD, CHF, CNY, DKK, EGP, EUR, GBP, HKD, IDR, INR, KRW, LKR, NPR, NZD, SAR, VND
+
+These are mostly the currencies with free-floating values, realistic inflationary or monetary targets, and the highest volumes of exchange with the kyat.  It kinda makes sense.
+
+Oddly enough, USD does not quite make the cut.  Maybe this means we should select this subset of currencies as inputs?  I'm not sure.
+
+### Test the model.
+
+```{r}
+pred <- predict.lm(model, data[[2]])
+mean(pred - data[[2]][,"y"])
+```
+The mean of the difference between the predicted values and the actual values (all at the temporal end of the dataset) is around 72 kyats or 5% in terms of the most recent 75 data points.  This means (I suppose) that the rate of inflation increases closer to the present time.  I do not yet know a better way to do this in R!  Andy, please shed some light.
+
+# Conclusions
+
+Removing the currencies with unexplained variance and introducing some higher order variables would probably make this model stronger.  Considering that this dataset crosses multiple authoritarian regimes (rumored to set rates by astrology), and that the exchange rate had a smaller rate of change ten years ago, perhaps we can introduce the dates of various political shifts as independent variables, as well.
