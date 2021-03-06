@@ -2,7 +2,8 @@
 title: "tidyingAndTransforming"
 author: "Sam Reeves"
 date: "3/5/2021"
-output: html_document
+output:
+  html_document
 ---
 
 ```{r setup, include=FALSE}
@@ -13,7 +14,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r message=FALSE}
 library(tidyr)
 library(dplyr)
-dat <- read.csv("numbersense.csv")
+dat <- read.csv("https://raw.githubusercontent.com/TheWerefriend/data607/master/week5/numbersense.csv")
 ```
 
 # Reshape the data
