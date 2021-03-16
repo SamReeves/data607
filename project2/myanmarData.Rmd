@@ -1,0 +1,131 @@
+---
+title: "Myanmar Financials"
+author: "Sam Reeves"
+date: "3/3/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Exposition
+
+On 2/2/2021, a coup d'etats saw the arrest of the eleted leader of Myanmar, Aung San Suu Kyi.  The national military body of the country, which had reserved for itself "25%" political power under the nominal democratic regime, took over many key industries and government departments over which it previously had no jurisdiction.  The Tatmadaw, as they are known, express signature cruelty and stupidity as their primary weapons.  Since the coup, 2100 have been arrested, and countless terrorist acts committed.
+
+A couple of weeks ago, some happy hacker released a 354GB archive (compressed) of information pertaining to political figures, all registered companies, legal tenders, and a bit of extra information.  It was called "Myanmar Financials".
+
+## What's in the leak?
+
+In this project, we will have a look at only a small portion of the data:
+
+1.  mvoter_app.json
+  This seems to be a nested json file with information on every person who registered as a political candidate.
+
+2.  bo-disclosure.csv
+  This file contains information on companies in the mining and gems and basic construction materials sectors.  Because the gem industry produces lots of money for the Shan army via jade and Mogok rubies, this will probably contain lots of useful information.  The Burmese government puts a lot of effort into controlling this sector.
+  
+3.  myco_details
+  This is a directory with other 125,000 txt files relating to another archive of pdf files.  The pdfs are all named with a hash, which begins the filename of a corresponding txt file in myco_details.  I believe these together provide information on all the companies (and people who registered them) in Myanmar.
+
+```{r message=FALSE}
+library(tibble)
+library(purrr)
+library(jsonlite)
+
+file1 <- "mvoter_app.json"
+file2 <- "bo-disclosure.csv"
+```
+
+## Dataset #1 mvoter_app.json
+
+Read in the json data and check it out.
+At the top of the tree there is \$data and some token we can throw out.  Inside \$data there are 5839 observations, each with lots of nested attributes.  At the second level, each observation contains "id" "type" and "attributes".  We are only interested in "attributes" because there are other ID elements in "attributes", and every "type" is set to "candidate".  "type" is also present in "attributes".
+
+
+```{r}
+mvoter <- fromJSON(file1, simplifyDataFrame = TRUE)
+mvoter <- mvoter$data
+```
+
+I wondered, at first, which JSON library to use.  We have rjson, RJSONIO, and jsonlite. After some research and tests, I find that RJSONIO has rewritten a couple of functions from rjson, and jsonlite has forked RJSONIO, making it the newest.  RJSONIO has the most customizable interface, but setting the simplify options to FALSE in jsonlite provides the fastest import by nearly a factor of 2.  In the end, jsonlite::fromJSON with simplifyDataFrame is best for this application.
+
+```{r}
+nrow(mvoter)
+length(mvoter$attributes)
+```
+
+We can check if all the observations have a uniform structure:
+```{r}
+mvoter %>%
+  map(names) %>%
+  unique() %>%
+  length() == 1
+
+mvoter <- mvoter$attributes
+names(mvoter)
+```
+It seems that not all of these columns have the same shape...  The nested lists have different numbers of values.  This is okay.
+
+## Dataset #2 bo-disclosure.csv
+
+Read in the csv and drop columns with mostly null values.
+
+I know from checking the file in Excel and a text editor, that this is extremely messy data.  There are hundreds of rows and hundreds of columns, lots of null values, and sometimes uneven numbers of columns for the observations.  Let's try an obscure package:
+
+```{r}
+PolyPatEx::fixCSV(file2)
+bodisc <- read.csv("bo-disclosureFIXED.csv")
+```
+After examining the differences between bo-disclosure.csv and bo-disclosureFIXED.csv, it is apparent that some cells are being parsed very badly.  fixCSV just gave it a haircut so the shape was uniform.
+
+At first, I thought that row 26 was the problem, with unmatched quotes damagind the overall structure.  Omitting that row with two reads and an rbind() call fixed nothing.
+
+We have so many issues, it's hard to know what they all are... So, let's try just drawing some of the columns.
+
+```{r}
+bodisc <- read.csv("bo-disclosureFIXED.csv", header=TRUE, nrows = 1)
+cols <- names(bodisc)[1:100]
+```
+
+These attempts also got me nowhere, so I opened the csv in LibreOffice Calc and deleted about 400 columns, relatively arbitrarily.  For the sake of this assignment, this is an adequate solution.  In the future, I will have to find a better fix.
+
+```{r}
+bodisc <- read.csv("bo-disclosureMARRED.csv", header = TRUE, fill = TRUE)
+bodisc[1:10, 1:10]
+```
+
+We are left with some disgustingly messy data, but it is finally loaded. At least, the file contains lots of data.  Since we are just trying to correlate political names and company owners, there is probably something useful in this if we can employ regular expressions.
+
+## Dataset #3 myco_details
+
+Here we have a directory of a large number of json files.  I do not expect them to have a uniform shape. In fact, they have many similarities, but most are sparse or empty.  The best thing to do would be to use these to indicate original documents (pdf documents named by the hash) relating to names in the other two datasets.
+
+```{r}
+files <- list.files(path = "~/Desktop/myco_details/")
+write.csv(files, "my_co_list.csv")
+files <- read.csv("my_co_list.csv")
+length(files)
+```
+
+Each filename consists of a hash, an underscore, and a name in English with hyphens as spaces.  We can make a dataframe with one column for the hash, and another column for the name.
+
+```{r}
+files <- stringr::str_split_fixed(files$x, "_", 2)
+colnames(files) <- c("hash", "name")
+df <- as.data.frame(files)
+df$name <- stringr::str_remove_all(df$name, ".json")
+```
+
+## The Search
+
+For each political candidate, we check to see if their name appears in the mining companies' information.  Then, we look for that company in the my_co files, and finally associate an original document.  We can make a final dataframe with columns politician, company, and document by filename hash.
+
+```{r}
+head(mvoter$name)
+head(bodisc$highest_ranking_official)
+head(bodisc$legal_owners.0..full_name_of_shareholders)
+```
+Well.  This is a bit of a non-starter.  The politicians names are written here in Burmese.... And, all the other information is written in English.
+
+I'll have to revisit this with translations..........

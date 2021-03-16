@@ -1,0 +1,21 @@
+---
+title: "Untitled"
+author: "Sam Reeves"
+date: "3/13/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+```{r}
+library(httr)
+query="https://www.googleapis.com/customsearch/v1?key=AIzaSyDGGlvHG0qLpOjLF5_k-ojZtPKjyFOSUYM&cx=1f1bbcd0558947d90&q=most+valuable+data+science+skills"
+blob<-content(GET(query))
+blob
+```
+
+```{r}
+write(blob, "googleQ1.json")
+```
+
