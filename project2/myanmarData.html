@@ -211,8 +211,8 @@ summary {
 library(purrr)
 library(jsonlite)
 
-file1 &lt;- &quot;mvoter_app.json&quot;
-file2 &lt;- &quot;bo-disclosure.csv&quot;</code></pre>
+file1 &lt;- &quot;https://raw.githubusercontent.com/TheWerefriend/data607/master/project2/mvoter_app.json&quot;
+file2 &lt;- &quot;https://raw.githubusercontent.com/TheWerefriend/data607/master/project2/bo-disclosure.csv&quot;</code></pre>
 </div>
 <div id="dataset-1-mvoter_app.json" class="section level2">
 <h2>Dataset #1 mvoter_app.json</h2>
@@ -245,25 +245,12 @@ names(mvoter)</code></pre>
 <h2>Dataset #2 bo-disclosure.csv</h2>
 <p>Read in the csv and drop columns with mostly null values.</p>
 <p>I know from checking the file in Excel and a text editor, that this is extremely messy data. There are hundreds of rows and hundreds of columns, lots of null values, and sometimes uneven numbers of columns for the observations. Let’s try an obscure package:</p>
-<pre class="r"><code>PolyPatEx::fixCSV(file2)</code></pre>
-<pre><code>## 
-## 
-##  Note : FixCSV found short rows in bo-disclosure.csv 
-##         These have been extended to match the header
-## 
-## 
-##  Note : FixCSV found long rows in bo-disclosure.csv 
-##         The extra entries have been stripped
-## 
-##         Output written to bo-disclosureFIXED.csv</code></pre>
-<pre class="r"><code>bodisc &lt;- read.csv(&quot;bo-disclosureFIXED.csv&quot;)</code></pre>
+<pre class="r"><code>#PolyPatEx::fixCSV(file2)
+bodisc &lt;- read.csv(&quot;https://raw.githubusercontent.com/TheWerefriend/data607/master/project2/bo-disclosureFIXED.csv&quot;)</code></pre>
 <p>After examining the differences between bo-disclosure.csv and bo-disclosureFIXED.csv, it is apparent that some cells are being parsed very badly. fixCSV just gave it a haircut so the shape was uniform.</p>
-<p>At first, I thought that row 26 was the problem, with unmatched quotes damagind the overall structure. Omitting that row with two reads and an rbind() call fixed nothing.</p>
-<p>We have so many issues, it’s hard to know what they all are… So, let’s try just drawing some of the columns.</p>
-<pre class="r"><code>bodisc &lt;- read.csv(&quot;bo-disclosureFIXED.csv&quot;, header=TRUE, nrows = 1)
-cols &lt;- names(bodisc)[1:100]</code></pre>
+<p>At first, I thought that row 26 was the problem, with unmatched quotes damagind the overall structure. Omitting that row with two reads and an rbind() call fixed nothing. We have so many issues, it’s hard to know what they all are… So, I tried taking just the first hundred columns…</p>
 <p>These attempts also got me nowhere, so I opened the csv in LibreOffice Calc and deleted about 400 columns, relatively arbitrarily. For the sake of this assignment, this is an adequate solution. In the future, I will have to find a better fix.</p>
-<pre class="r"><code>bodisc &lt;- read.csv(&quot;bo-disclosureMARRED.csv&quot;, header = TRUE, fill = TRUE)
+<pre class="r"><code>bodisc &lt;- read.csv(&quot;https://raw.githubusercontent.com/TheWerefriend/data607/master/project2/bo-disclosureMARRED.csv&quot;, header = TRUE, fill = TRUE)
 bodisc[1:10, 1:10]</code></pre>
 <pre><code>##     id                                                                    title
 ## 1  393                                                JUNE CEMENT INDUSTRY LTD.
@@ -325,9 +312,9 @@ bodisc[1:10, 1:10]</code></pre>
 <div id="dataset-3-myco_details" class="section level2">
 <h2>Dataset #3 myco_details</h2>
 <p>Here we have a directory of a large number of json files. I do not expect them to have a uniform shape. In fact, they have many similarities, but most are sparse or empty. The best thing to do would be to use these to indicate original documents (pdf documents named by the hash) relating to names in the other two datasets.</p>
-<pre class="r"><code>files &lt;- list.files(path = &quot;~/Desktop/myco_details/&quot;)
-write.csv(files, &quot;my_co_list.csv&quot;)
-files &lt;- read.csv(&quot;my_co_list.csv&quot;)
+<pre class="r"><code>#files &lt;- list.files(path = &quot;~/Desktop/myco_details/&quot;)
+#write.csv(files, &quot;my_co_list.csv&quot;)
+files &lt;- read.csv(&quot;https://raw.githubusercontent.com/TheWerefriend/data607/master/project2/my_co_list.csv&quot;)
 length(files)</code></pre>
 <pre><code>## [1] 2</code></pre>
 <p>Each filename consists of a hash, an underscore, and a name in English with hyphens as spaces. We can make a dataframe with one column for the hash, and another column for the name.</p>

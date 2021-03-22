@@ -33,8 +33,8 @@ library(tibble)
 library(purrr)
 library(jsonlite)
 
-file1 <- "mvoter_app.json"
-file2 <- "bo-disclosure.csv"
+file1 <- "https://raw.githubusercontent.com/TheWerefriend/data607/master/project2/mvoter_app.json"
+file2 <- "https://raw.githubusercontent.com/TheWerefriend/data607/master/project2/bo-disclosure.csv"
 ```
 
 ## Dataset #1 mvoter_app.json
@@ -74,24 +74,17 @@ Read in the csv and drop columns with mostly null values.
 I know from checking the file in Excel and a text editor, that this is extremely messy data.  There are hundreds of rows and hundreds of columns, lots of null values, and sometimes uneven numbers of columns for the observations.  Let's try an obscure package:
 
 ```{r}
-PolyPatEx::fixCSV(file2)
-bodisc <- read.csv("bo-disclosureFIXED.csv")
+#PolyPatEx::fixCSV(file2)
+bodisc <- read.csv("https://raw.githubusercontent.com/TheWerefriend/data607/master/project2/bo-disclosureFIXED.csv")
 ```
 After examining the differences between bo-disclosure.csv and bo-disclosureFIXED.csv, it is apparent that some cells are being parsed very badly.  fixCSV just gave it a haircut so the shape was uniform.
 
-At first, I thought that row 26 was the problem, with unmatched quotes damagind the overall structure.  Omitting that row with two reads and an rbind() call fixed nothing.
-
-We have so many issues, it's hard to know what they all are... So, let's try just drawing some of the columns.
-
-```{r}
-bodisc <- read.csv("bo-disclosureFIXED.csv", header=TRUE, nrows = 1)
-cols <- names(bodisc)[1:100]
-```
+At first, I thought that row 26 was the problem, with unmatched quotes damagind the overall structure.  Omitting that row with two reads and an rbind() call fixed nothing.  We have so many issues, it's hard to know what they all are... So, I tried taking just the first hundred columns...
 
 These attempts also got me nowhere, so I opened the csv in LibreOffice Calc and deleted about 400 columns, relatively arbitrarily.  For the sake of this assignment, this is an adequate solution.  In the future, I will have to find a better fix.
 
 ```{r}
-bodisc <- read.csv("bo-disclosureMARRED.csv", header = TRUE, fill = TRUE)
+bodisc <- read.csv("https://raw.githubusercontent.com/TheWerefriend/data607/master/project2/bo-disclosureMARRED.csv", header = TRUE, fill = TRUE)
 bodisc[1:10, 1:10]
 ```
 
@@ -102,9 +95,9 @@ We are left with some disgustingly messy data, but it is finally loaded. At leas
 Here we have a directory of a large number of json files.  I do not expect them to have a uniform shape. In fact, they have many similarities, but most are sparse or empty.  The best thing to do would be to use these to indicate original documents (pdf documents named by the hash) relating to names in the other two datasets.
 
 ```{r}
-files <- list.files(path = "~/Desktop/myco_details/")
-write.csv(files, "my_co_list.csv")
-files <- read.csv("my_co_list.csv")
+#files <- list.files(path = "~/Desktop/myco_details/")
+#write.csv(files, "my_co_list.csv")
+files <- read.csv("https://raw.githubusercontent.com/TheWerefriend/data607/master/project2/my_co_list.csv")
 length(files)
 ```
 
