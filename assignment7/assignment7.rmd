@@ -11,22 +11,43 @@ knitr::opts_chunk$set(echo = TRUE)
 
 In this assignment, we will compare the data frame objects created by different file formats.  At this point, I can't really tell if I love or hate JSON data (it's got to be one or the other).  I suppose we will find out.
 
-```{r}
+```{r message=FALSE}
 library(RCurl)
-library(XML)
 library(jsonlite)
+library(rvest)
+library(XML)
+library(janitor)
+```
 
+Here are the files.... The JSON data loads quite clean right into a data.frame object:
+```{r}
 html_url <- "https://raw.githubusercontent.com/TheWerefriend/data607/master/assignment7/books.html"
 xml_url <- "https://raw.githubusercontent.com/TheWerefriend/data607/master/assignment7/books.xml"
 json_url <- "https://raw.githubusercontent.com/TheWerefriend/data607/master/assignment7/books.json"
 
-html_raw <- ""
-xml_raw <- ""
-json_raw <- ""
-
-df_html <- ""
-df_xml <- ""
-df_json <- ""
-
+json_df <- fromJSON(json_url, simplifyDataFrame = TRUE)
+json_df
 ```
+
+These other formats... Not so much.
+```{r}
+html_df <- read_html(html_url) %>%
+  html_table() %>%
+  data.frame() %>%
+  row_to_names(row_number = 1)
+
+html_df
+```
+
+```{r}
+xml_df <- getURL(xml_url) %>%
+  xmlParse() %>%
+  xmlRoot() %>%
+  xmlToDataFrame()
+
+xml_df
+```
+
+
+
 
