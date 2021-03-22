@@ -1,0 +1,32 @@
+---
+title: "Assignment7"
+author: "Sam Reeves"
+date: "3/22/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+In this assignment, we will compare the data frame objects created by different file formats.  At this point, I can't really tell if I love or hate JSON data (it's got to be one or the other).  I suppose we will find out.
+
+```{r}
+library(RCurl)
+library(XML)
+library(jsonlite)
+
+html_url <- "https://raw.githubusercontent.com/TheWerefriend/data607/master/assignment7/books.html"
+xml_url <- "https://raw.githubusercontent.com/TheWerefriend/data607/master/assignment7/books.xml"
+json_url <- "https://raw.githubusercontent.com/TheWerefriend/data607/master/assignment7/books.json"
+
+html_raw <- ""
+xml_raw <- ""
+json_raw <- ""
+
+df_html <- ""
+df_xml <- ""
+df_json <- ""
+
+```
+
