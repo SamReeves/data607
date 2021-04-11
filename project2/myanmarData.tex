@@ -1,0 +1,437 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+%
+\documentclass[
+]{article}
+\usepackage{lmodern}
+\usepackage{amsmath}
+\usepackage{ifxetex,ifluatex}
+\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+  \usepackage{amssymb}
+\else % if luatex or xetex
+  \usepackage{unicode-math}
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{xcolor}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
+\hypersetup{
+  pdftitle={Myanmar Financials},
+  pdfauthor={Sam Reeves},
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+\urlstyle{same} % disable monospaced font for URLs
+\usepackage[margin=1in]{geometry}
+\usepackage{color}
+\usepackage{fancyvrb}
+\newcommand{\VerbBar}{|}
+\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+% Add ',fontsize=\small' for more characters per line
+\usepackage{framed}
+\definecolor{shadecolor}{RGB}{248,248,248}
+\newenvironment{Shaded}{\begin{snugshade}}{\end{snugshade}}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{0.94,0.16,0.16}{#1}}
+\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.77,0.63,0.00}{#1}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\BuiltInTok}[1]{#1}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ErrorTok}[1]{\textcolor[rgb]{0.64,0.00,0.00}{\textbf{#1}}}
+\newcommand{\ExtensionTok}[1]{#1}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\ImportTok}[1]{#1}
+\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\NormalTok}[1]{#1}
+\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\RegionMarkerTok}[1]{#1}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\usepackage{graphicx}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+% Set default figure placement to htbp
+\makeatletter
+\def\fps@figure{htbp}
+\makeatother
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\ifluatex
+  \usepackage{selnolig}  % disable illegal ligatures
+\fi
+
+\title{Myanmar Financials}
+\author{Sam Reeves}
+\date{3/3/2021}
+
+\begin{document}
+\maketitle
+
+\hypertarget{exposition}{%
+\section{Exposition}\label{exposition}}
+
+On 2/2/2021, a coup d'etats saw the arrest of the eleted leader of
+Myanmar, Aung San Suu Kyi. The national military body of the country,
+which had reserved for itself ``25\%'' political power under the nominal
+democratic regime, took over many key industries and government
+departments over which it previously had no jurisdiction. The Tatmadaw,
+as they are known, express signature cruelty and stupidity as their
+primary weapons. Since the coup, 2100 have been arrested, and countless
+terrorist acts committed.
+
+A couple of weeks ago, some happy hacker released a 354GB archive
+(compressed) of information pertaining to political figures, all
+registered companies, legal tenders, and a bit of extra information. It
+was called ``Myanmar Financials''.
+
+\hypertarget{whats-in-the-leak}{%
+\subsection{What's in the leak?}\label{whats-in-the-leak}}
+
+In this project, we will have a look at only a small portion of the
+data:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\item
+  mvoter\_app.json This seems to be a nested json file with information
+  on every person who registered as a political candidate.
+\item
+  bo-disclosure.csv This file contains information on companies in the
+  mining and gems and basic construction materials sectors. Because the
+  gem industry produces lots of money via Shan jade and Mogok rubies,
+  this will probably contain lots of useful information. The Burmese
+  government puts a lot of effort into controlling this sector.
+\item
+  myco\_details This is a directory with other 125,000 txt files
+  relating to another archive of pdf files. The pdfs are all named with
+  a hash, which begins the filename of a corresponding txt file in
+  myco\_details. I believe these together provide information on all the
+  companies (and people who registered them) in Myanmar.
+\end{enumerate}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{library}\NormalTok{(tibble)}
+\FunctionTok{library}\NormalTok{(purrr)}
+\FunctionTok{library}\NormalTok{(jsonlite)}
+
+\NormalTok{file1 }\OtherTok{\textless{}{-}} \StringTok{"https://raw.githubusercontent.com/TheWerefriend/data607/master/project2/mvoter\_app.json"}
+\NormalTok{file2 }\OtherTok{\textless{}{-}} \StringTok{"https://raw.githubusercontent.com/TheWerefriend/data607/master/project2/bo{-}disclosure.csv"}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{dataset-1-mvoter_app.json}{%
+\subsection{Dataset \#1
+mvoter\_app.json}\label{dataset-1-mvoter_app.json}}
+
+Read in the json data and check it out. At the top of the tree there is
+\$data and some token we can throw out. Inside \$data there are 5839
+observations, each with lots of nested attributes. At the second level,
+each observation contains ``id'' ``type'' and ``attributes''. We are
+only interested in ``attributes'' because there are other ID elements in
+``attributes'', and every ``type'' is set to ``candidate''. ``type'' is
+also present in ``attributes''.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{mvoter }\OtherTok{\textless{}{-}} \FunctionTok{fromJSON}\NormalTok{(file1, }\AttributeTok{simplifyDataFrame =} \ConstantTok{TRUE}\NormalTok{)}
+\NormalTok{mvoter }\OtherTok{\textless{}{-}}\NormalTok{ mvoter}\SpecialCharTok{$}\NormalTok{data}
+\end{Highlighting}
+\end{Shaded}
+
+I wondered, at first, which JSON library to use. We have rjson, RJSONIO,
+and jsonlite. After some research and tests, I find that RJSONIO has
+rewritten a couple of functions from rjson, and jsonlite has forked
+RJSONIO, making it the newest. RJSONIO has the most customizable
+interface, but setting the simplify options to FALSE in jsonlite
+provides the fastest import by nearly a factor of 2. In the end,
+jsonlite::fromJSON with simplifyDataFrame is best for this application.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{nrow}\NormalTok{(mvoter)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] 5839
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{length}\NormalTok{(mvoter}\SpecialCharTok{$}\NormalTok{attributes)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] 21
+\end{verbatim}
+
+We can check if all the observations have a uniform structure:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{mvoter }\SpecialCharTok{\%\textgreater{}\%}
+  \FunctionTok{map}\NormalTok{(names) }\SpecialCharTok{\%\textgreater{}\%}
+  \FunctionTok{unique}\NormalTok{() }\SpecialCharTok{\%\textgreater{}\%}
+  \FunctionTok{length}\NormalTok{() }\SpecialCharTok{==} \DecValTok{1}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] FALSE
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{mvoter }\OtherTok{\textless{}{-}}\NormalTok{ mvoter}\SpecialCharTok{$}\NormalTok{attributes}
+\FunctionTok{names}\NormalTok{(mvoter)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##  [1] "age"                    "ballot_order"           "birthday"              
+##  [4] "constituency"           "education"              "ethnicity"             
+##  [7] "father"                 "gender"                 "image"                 
+## [10] "individual_logo"        "is_elected"             "is_ethnic_candidate"   
+## [13] "is_individual"          "mother"                 "name"                  
+## [16] "party"                  "religion"               "representing_ethnicity"
+## [19] "residential_address"    "sorting_name"           "work"
+\end{verbatim}
+
+It seems that not all of these columns have the same shape\ldots{} The
+nested lists have different numbers of values. This is okay.
+
+\hypertarget{dataset-2-bo-disclosure.csv}{%
+\subsection{Dataset \#2
+bo-disclosure.csv}\label{dataset-2-bo-disclosure.csv}}
+
+Read in the csv and drop columns with mostly null values.
+
+I know from checking the file in Excel and a text editor, that this is
+extremely messy data. There are hundreds of rows and hundreds of
+columns, lots of null values, and sometimes uneven numbers of columns
+for the observations. Let's try an obscure package:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\#PolyPatEx::fixCSV(file2)}
+\NormalTok{bodisc }\OtherTok{\textless{}{-}} \FunctionTok{read.csv}\NormalTok{(}\StringTok{"https://raw.githubusercontent.com/TheWerefriend/data607/master/project2/bo{-}disclosureFIXED.csv"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+After examining the differences between bo-disclosure.csv and
+bo-disclosureFIXED.csv, it is apparent that some cells are being parsed
+very badly. fixCSV just gave it a haircut so the shape was uniform.
+
+At first, I thought that row 26 was the problem, with unmatched quotes
+damagind the overall structure. Omitting that row with two reads and an
+rbind() call fixed nothing. We have so many issues, it's hard to know
+what they all are\ldots{} So, I tried taking just the first hundred
+columns\ldots{}
+
+These attempts also got me nowhere, so I opened the csv in LibreOffice
+Calc and deleted about 400 columns, relatively arbitrarily. For the sake
+of this assignment, this is an adequate solution. In the future, I will
+have to find a better fix.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{bodisc }\OtherTok{\textless{}{-}} \FunctionTok{read.csv}\NormalTok{(}\StringTok{"https://raw.githubusercontent.com/TheWerefriend/data607/master/project2/bo{-}disclosureMARRED.csv"}\NormalTok{, }\AttributeTok{header =} \ConstantTok{TRUE}\NormalTok{, }\AttributeTok{fill =} \ConstantTok{TRUE}\NormalTok{)}
+\NormalTok{bodisc[}\DecValTok{1}\SpecialCharTok{:}\DecValTok{10}\NormalTok{, }\DecValTok{1}\SpecialCharTok{:}\DecValTok{10}\NormalTok{]}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##     id                                                                    title
+## 1  393                                                JUNE CEMENT INDUSTRY LTD.
+## 2  392                           MOATTAMA GAS TRANSPORTATION CO., LTD. (BRANCH)
+## 3  390                                SHWE HUA GEMS & JEWELLERY COMPANY LIMITED
+## 4  389                                   SILVER SAND STONE GEMS COMPANY LIMITED
+## 5  388                                      MYANMAR CNMC NICKEL COMPANY LIMITED
+## 6  387                   LON HAI PRODUCTION TRADING OF GEMSTONE COMPANY LIMITED
+## 7  386                                AUNG SHWE KABAR GEMS & JEWELLERY CO., LTD
+## 8  384 DEVELOPERS ENTREPRENEURS LIAISON CONSTRUCTION ORGANIZERS (DELCO) LIMITED
+## 9  382                                    AUNG THUKHA DANA GEMS COMPANY LIMITED
+## 10 381                                    SHWE PAUK PAUK MINING COMPANY LIMITED
+##    jurisdiction_registration unique_id
+## 1                         MM 117418820
+## 2                         MM 142356155
+## 3                         MM 111532001
+## 4                         MM 100900424
+## 5                         MM 108341157
+## 6                         MM 134823119
+## 7                         MM 114585149
+## 8                         MM 125445020
+## 9                         MM 104728448
+## 10                        MM 118049551
+##                                                                                                      contact_address
+## 1                                                        No.80, Sayarsan Lane,Bahan Township, Yangon Region, Myanmar
+## 2                      No. 5 Sacred Tooth Relic Lake Avenue\n Punn Pin Gone Quarter No.5, Mayangone Township, YANGON
+## 3                                                                 THARYAR SHWEPYI ROAD, NO. (D-2), TAMWELAY QUARTER,
+## 4                                                No,62-63 , Ngu Shwe Wah Street , No (8/43), Chanmyatharzi Township.
+## 5                            No.3/F, U Kyaw Hla Street, Seven Ward, Seven Miles\nMayangone Township, Yangon, Myanmar
+## 6                             Mahar Aung Myay Township, between 61 & 62 streets, Theik Pan Street, No. 4/5, Mandalay
+## 7                                          No.(63), 4th Floor, Baho Road, Sanchaung Township, Yangon Region, Myanmar
+## 8                                                           No.150/B, University Avenue Road, Bahan Township, Yangon
+## 9  No.(MA-9/33, Corner Of 63th Street & Padauk Street\nMyothit(1) Word, Chan Mya Thar Si Township, MANDALAY, Myanmar
+## 10                  No.58, Sa Sa -2, Zabu Thiri StreetBetween 58 x 59 Street,Kan Thar Yar Quarter, Mandalay, Myanmar
+##                                              contact_address_2    state
+## 1                                                         null   Yangon
+## 2                                                         null   Yangon
+## 3                                                         null   Yangon
+## 4                                                         null Mandalay
+## 5  Maunggone Village, Tagaung Taung Nickel Project, Hteegyaint  Sagaing
+## 6   Shwe Pone Nyet StreetL/6Kamaryut Township, Yangon, Myanmar Mandalay
+## 7                                                         null   Yangon
+## 8                                                         null   Yangon
+## 9                                                         null Mandalay
+## 10                                                        null Mandalay
+##            city country  zip_code
+## 1         Bahan      MM      null
+## 2      Mayangon      MM      null
+## 3         Tamwe      MM      null
+## 4  Chanmyathazi      MM      null
+## 5         Katha      MM      null
+## 6   Mahaaungmye      MM 0503-1733
+## 7     Sanchaung      MM      null
+## 8         Bahan      MM      null
+## 9  Chanmyathazi      MM      null
+## 10 Chanmyathazi      MM      null
+\end{verbatim}
+
+We are left with some disgustingly messy data, but it is finally loaded.
+At least, the file contains lots of data. Since we are just trying to
+correlate political names and company owners, there is probably
+something useful in this if we can employ regular expressions.
+
+\hypertarget{dataset-3-myco_details}{%
+\subsection{Dataset \#3 myco\_details}\label{dataset-3-myco_details}}
+
+Here we have a directory of a large number of json files. I do not
+expect them to have a uniform shape. In fact, they have many
+similarities, but most are sparse or empty. The best thing to do would
+be to use these to indicate original documents (pdf documents named by
+the hash) relating to names in the other two datasets.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\#files \textless{}{-} list.files(path = "\textasciitilde{}/Desktop/myco\_details/")}
+\CommentTok{\#write.csv(files, "my\_co\_list.csv")}
+\NormalTok{files }\OtherTok{\textless{}{-}} \FunctionTok{read.csv}\NormalTok{(}\StringTok{"https://raw.githubusercontent.com/TheWerefriend/data607/master/project2/my\_co\_list.csv"}\NormalTok{)}
+\FunctionTok{length}\NormalTok{(files)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] 2
+\end{verbatim}
+
+Each filename consists of a hash, an underscore, and a name in English
+with hyphens as spaces. We can make a dataframe with one column for the
+hash, and another column for the name.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{files }\OtherTok{\textless{}{-}}\NormalTok{ stringr}\SpecialCharTok{::}\FunctionTok{str\_split\_fixed}\NormalTok{(files}\SpecialCharTok{$}\NormalTok{x, }\StringTok{"\_"}\NormalTok{, }\DecValTok{2}\NormalTok{)}
+\FunctionTok{colnames}\NormalTok{(files) }\OtherTok{\textless{}{-}} \FunctionTok{c}\NormalTok{(}\StringTok{"hash"}\NormalTok{, }\StringTok{"name"}\NormalTok{)}
+\NormalTok{df }\OtherTok{\textless{}{-}} \FunctionTok{as.data.frame}\NormalTok{(files)}
+\NormalTok{df}\SpecialCharTok{$}\NormalTok{name }\OtherTok{\textless{}{-}}\NormalTok{ stringr}\SpecialCharTok{::}\FunctionTok{str\_remove\_all}\NormalTok{(df}\SpecialCharTok{$}\NormalTok{name, }\StringTok{".json"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{the-search}{%
+\subsection{The Search}\label{the-search}}
+
+For each political candidate, we check to see if their name appears in
+the mining companies' information. Then, we look for that company in the
+my\_co files, and finally associate an original document. We can make a
+final dataframe with columns politician, company, and document by
+filename hash.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{head}\NormalTok{(mvoter}\SpecialCharTok{$}\NormalTok{name)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] "ဦးကရိုးလရိန်"           "ဦးခင်လဲဖုန်"            "ဦးဂူဆာပါး"          
+## [4] "ဦးခင်မောင်မြင့်(ခ)ဦးဒိတ်" "ဦးဂျေယောဝူ"          "ဦးငွါးဇာဒီး"
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{head}\NormalTok{(bodisc}\SpecialCharTok{$}\NormalTok{highest\_ranking\_official)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] null null null null null null
+## Levels: Chanayethazan null
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{head}\NormalTok{(bodisc}\SpecialCharTok{$}\NormalTok{legal\_owners.}\DecValTok{0}\NormalTok{..full\_name\_of\_shareholders)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] DR. NU NU WIN                         MOATTAMA GAS TRANSPORTATION CO., LTD.
+## [3] U EIKE TUN                            MM                                   
+## [5] CNMC NICKEL COMPANY LIMITED           Ann Hai                              
+## 267 Levels: AH SHONE Ah Woo Aheik Kwye AIKE CHWIN AIKE HTWE Ann Hai ... Yang Chin Kwan
+\end{verbatim}
+
+Well. This is a bit of a non-starter. The politicians names are written
+here in Burmese\ldots. And, all the other information is written in
+English.
+
+I'll have to revisit this with translations\ldots\ldots\ldots.
+
+\end{document}

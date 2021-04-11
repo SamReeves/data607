@@ -1,8 +1,10 @@
 ---
 title: "Myanmar Financials"
 author: "Sam Reeves"
-date: "3/3/2021"
-output: html_document
+date: "6/4/2021"
+output:
+  html_document: default
+  pdf_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -23,7 +25,7 @@ In this project, we will have a look at only a small portion of the data:
   This seems to be a nested json file with information on every person who registered as a political candidate.
 
 2.  bo-disclosure.csv
-  This file contains information on companies in the mining and gems and basic construction materials sectors.  Because the gem industry produces lots of money for the Shan army via jade and Mogok rubies, this will probably contain lots of useful information.  The Burmese government puts a lot of effort into controlling this sector.
+  This file contains information on companies in the mining and gems and basic construction materials sectors.  Because the gem industry produces lots of money via Shan jade and Mogok rubies, this will probably contain lots of useful information.  The Burmese government puts a lot of effort into controlling this sector.
   
 3.  myco_details
   This is a directory with other 125,000 txt files relating to another archive of pdf files.  The pdfs are all named with a hash, which begins the filename of a corresponding txt file in myco_details.  I believe these together provide information on all the companies (and people who registered them) in Myanmar.

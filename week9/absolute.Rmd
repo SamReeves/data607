@@ -1,0 +1,64 @@
+---
+title: "Working with Web APIs"
+author: "Sam Reeves"
+date: "4/9/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### Picking an API
+
+After getting an API key from developer.nytimes.com/apis, I have opted to use the Article Search API.  I want to know about all the NYTimes articles concerning the very center of the universe: Absolute Bagels on the UWS.  When I left NYC, I would sometimes wake up from bagel dreams, chewing on a wet pillow.  Maybe this will help me relive my everything-double-toasted-with-butter days.
+
+```{r}
+library(httr)
+library(jsonlite)
+```
+
+### Building an API call
+
+An API call consists of a few necessary parts, and many optional ones. 
+Here's an example:
+
+```
+GET https://api.nytimes.com/svc/search/v2/articlesearch.json?q=%22absolute%20bagels%22&sort=relevance&api-key=XXXXXXXX
+```
+
+1. the base URL 
+2. the query string 
+3. "&api-key="
+4. the API key
+
+In our example, we sort the results by relevance, denoted by sort=relevance, and we are just taking the default search results page.
+
+We can construct it like this:
+
+```{r}
+base <- "https://api.nytimes.com/svc/search/v2/articlesearch.json?q="
+query <- "%22absolute%20bagels%22"
+sort <- "&sort=relevance"
+ak <- "&api-key="
+key <- "rFlQcW68K4OTRn8dpDTy6CeWL1qk23jj"
+
+q <- paste0(base, query, sort, ak, key)
+```
+
+We use paste0() instead of paste() because we do not need a separator, and it's a tiny bit more efficient.
+
+Let's make the API call and save the content we are served:
+
+```{r}
+req <- GET(q)
+cont <- content(req, 'text')
+json_data <- fromJSON(cont)
+
+articles <- json_data$response$docs
+```
+Let's check out the abstracts........
+
+```{r}
+articles$abstract
+```
