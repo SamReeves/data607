@@ -1,0 +1,254 @@
+---
+title: "Text Mining"
+author: "Sam Reeves"
+date: "4/13/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# The task
+
+I'm going to use some code which gives a basic example of textmining with Jane Austen novels and extend it to a new corpus and a new lexicon.  I'll also bring in a new lexicon for sentiment analysis.
+
+I have found some domain specific lexicons created from some of the most popular reddit communites, made available by William Leif with an Apache License v2.0. https://github.com/williamleif/socialsent
+
+We will be using Eric Cartman's dialogue from seasons 1-19 of Southpark to compare these lexicons.  This information is available at https://github.com/BobAdamsEE/SouthParkData with the Attribution-Share Alike v3.0 unported license.
+
+# The legal bit
+
+The Jane Austen code is from Chapter 2: Looks at Sentiment Analysis in Text Mining with R by Julia Silge and David Robinson.
+
+Silge, J. and Robinson, D., 2017. Text mining with R. 1st ed. Sebastopol, CA, USA: O'Reilly Books.
+
+The "bing" lexicon was first published in Minqing Hu and Bing Liu, ``Mining and summarizing customer reviews.'', Proceedings of the ACM SIGKDD International Conference on Knowledge Discovery & Data Mining (KDD-2004), 2004. It is available for use with attribution.
+
+AFINN Sentiment Lexicon is available with ODbL v1.0, and NRC Word-Emotion Association Lexicon, known also as EmoLex is available for non-commercial research use.
+
+# The example code
+
+We start by loading libraries and downloading the base sentiment analysis datasets.
+
+```{r message=FALSE}
+library(tidytext)
+library(janeaustenr)
+library(dplyr)
+library(stringr)
+library(tidyr)
+library(ggplot2)
+library(wordcloud)
+library(reshape2)
+
+afinn <- get_sentiments("afinn")
+bing <- get_sentiments("bing")
+nrc <- get_sentiments("nrc")
+```
+
+We tidy up a dataset that contains some Jane Austen novels.
+
+```{r}
+tidy_books <- austen_books() %>%
+  group_by(book) %>%
+  mutate(
+    linenumber = row_number(),
+    chapter = cumsum(str_detect(text, 
+                                regex("^chapter [\\divxlc]", 
+                                      ignore_case = TRUE)))) %>%
+  ungroup() %>%
+  unnest_tokens(word, text)
+```
+
+Then we collect the words from the nrc sentiment set with connotations of joy.
+
+```{r}
+nrc_joy <- nrc %>%
+  filter(sentiment == "joy")
+```
+
+We use an inner join to see which words from Emma are joyful, according to the nrc set, and how often they occur.
+
+```{r}
+emma_joy <- tidy_books %>%
+  filter(book == "Emma") %>%
+  inner_join(nrc_joy) %>%
+  count(word, sort = TRUE)
+```
+
+Now, we can use an inner join with the bing set to consider the sentiment changes from beginning to end.  Floor division breaks up the text into chunks of 80 lines.
+
+```{r message=FALSE}
+jane_austen_sentiment <- tidy_books %>%
+  inner_join(bing) %>%
+  count(book, index = linenumber %/% 80, sentiment) %>%
+  pivot_wider(names_from = sentiment, values_from = n, values_fill = 0) %>%
+  mutate(sentiment = positive - negative)
+```
+
+Then we plot the sentiment scores.
+
+```{r}
+ggplot(jane_austen_sentiment,
+       aes(index, sentiment, fill = book)) +
+  geom_col(show.legend = FALSE) +
+  facet_wrap(~book, ncol = 2, scales = "free_x")
+```
+Let's work with Pride and Prejudice.
+
+```{r}
+pride_prejudice <- tidy_books %>%
+  filter(book == "Pride & Prejudice")
+```
+
+Because the bing sentiment set categorizes words on a scale of -5 to 5, we will have to make a function for comparison distinct from that for the other two sets, which categorize things in a binary manner.
+
+```{r message=FALSE}
+pp_afinn <- pride_prejudice %>%
+  inner_join(afinn) %>%
+  group_by(index = linenumber %/% 80) %>%
+  summarize(sentiment = sum(value)) %>%
+  mutate(method = "AFINN")
+
+pp_bing_nrc <- bind_rows(
+  pride_prejudice %>%
+    inner_join(bing) %>%
+    mutate(method = "Bing et al."),
+  pride_prejudice %>%
+    inner_join(nrc %>%
+                 filter(sentiment %in% c("positive",
+                                         "negative"))) %>%
+    mutate(method = "NRC")) %>%
+  count(method, index = linenumber %/% 80, sentiment) %>%
+  pivot_wider(names_from = sentiment,
+              values_from = n,
+              values_fill = 0) %>%
+  mutate(sentiment = positive - negative)
+```
+Here is a net sentiment estimation for each chunk of Pride and Prejudice.
+
+```{r}
+bind_rows(pp_afinn,
+          pp_bing_nrc) %>%
+  ggplot(aes(index, sentiment, fill = method)) +
+  geom_col(show.legend = FALSE) +
+  facet_wrap(~method, ncol = 1, scales = "free_y")
+```
+According to the text and visibly in the charts, NRC is more positive, AFINN has more variance, and Bing et al. find more consistent stretches of text. Reportedly, this happens with other texts, as well.
+
+Why?
+
+```{r}
+nrc %>%
+  filter(sentiment %in% c("positive",
+                          "negative")) %>%
+  count(sentiment)
+```
+
+```{r}
+count(bing, sentiment)
+```
+
+```{r message=FALSE}
+(bing_word_counts <- tidy_books %>%
+  inner_join(bing) %>%
+  count(word, sentiment, sort = TRUE) %>%
+  ungroup())
+```
+
+These are the words that contribute the most to sentiment analysis in the text:
+
+```{r}
+bing_word_counts %>%
+  group_by(sentiment) %>%
+  slice_max(n, n = 10) %>%
+  ungroup() %>%
+  mutate(word = reorder(word, n)) %>%
+  ggplot(aes(n, word, fill = sentiment)) +
+  geom_col(show.legend = FALSE) +
+  facet_wrap(~sentiment, scales = "free_y") +
+  labs(x = "Contribution to sentiment",
+       y = NULL)
+```
+
+It helps to define some stop words to avoid the missuse of some vocabulary.
+
+```{r}
+(custom_stop_words <- bind_rows(tibble(word = c("miss"),
+                                       lexicon = c("custom")),
+                                stop_words))
+```
+And, we can build a wordcloud.
+
+```{r warning=FALSE, message=FALSE}
+tidy_books %>% 
+  anti_join(stop_words) %>%
+  count(word) %>%
+  with(wordcloud(word, n, max.words = 100))
+```
+
+```{r warning=FALSE, message=FALSE}
+tidy_books %>%
+  inner_join(bing) %>%
+  count(word, sentiment, sort = TRUE) %>%
+  acast(word ~ sentiment, value.var = "n", fill = 0) %>%
+  comparison.cloud(colors = c("gray20", "gray80"),
+                   max.words = 100)
+```
+
+We can also examine units greater than simple words.  Sometimes negation or sentence complexity can affect the true sentiment of a piece of text.  The libraries coreNLP and cleanNLP attempt just this.  We can cut the books into chapters.
+
+```{r}
+pp_sentences <- tibble(text = prideprejudice) %>%
+  unnest_tokens(sentence, text, token = "sentences")
+
+austen_chapters <- austen_books() %>%
+  group_by(book) %>%
+  unnest_tokens(chapter, text, token = "regex",
+                pattern = "Chapter|CHAPTER [\\dIVXLC]") %>%
+  ungroup()
+
+austen_chapters %>%
+  group_by(book) %>%
+  summarize(chapters = n())
+```
+
+```{r message=FALSE}
+bingnegative <- bing %>%
+  filter(sentiment == "negative")
+
+wordcounts <- tidy_books %>%
+  group_by(book, chapter) %>%
+  summarize(words = n())
+
+tidy_books %>%
+  semi_join(bingnegative) %>%
+  group_by(book, chapter) %>%
+  summarize(negativewords = n()) %>%
+  left_join(wordcounts, by = c("book", "chapter")) %>%
+  mutate(ratio = negativewords/words) %>%
+  filter(chapter != 0) %>%
+  slice_max(ratio, n = 1) %>%
+  ungroup()
+```
+
+# Cartman and Reddit
+
+First things first: we load the data described above.  The lexicons we will be comparing represent feelings associated with the 5000 most common words (minus stop words) on r/AskMen, r/AskWomen, r/Parenting, and r/Anarcho_Capitalism.
+
+```{r}
+cartman <- read.csv("https://raw.githubusercontent.com/BobAdamsEE/SouthParkData/master/by-character/cartman.csv")
+
+# schema: <word> <average sentiment> <standard deviation>
+
+askmen <- ""
+askwomen <- ""
+parenting <- ""
+ancap <- ""
+```
+
+Which lexicon is most like Cartman's?
+
+Which subreddit community might have the most positive associations toward Eric Cartman?
+
+Which is the most negative?
