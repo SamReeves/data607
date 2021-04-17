@@ -1,5 +1,5 @@
 ---
-title: "Text Mining"
+title: "Text Mining (Jane Austen)"
 author: "Sam Reeves"
 date: "4/13/2021"
 output: html_document
@@ -11,11 +11,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # The task
 
-I'm going to use some code which gives a basic example of textmining with Jane Austen novels and extend it to a new corpus and a new lexicon.  I'll also bring in a new lexicon for sentiment analysis.
-
-I have found some domain specific lexicons created from some of the most popular reddit communites, made available by William Leif with an Apache License v2.0. https://github.com/williamleif/socialsent
-
-We will be using Eric Cartman's dialogue from seasons 1-19 of Southpark to compare these lexicons.  This information is available at https://github.com/BobAdamsEE/SouthParkData with the Attribution-Share Alike v3.0 unported license.
+I'm going to use some code which gives a basic example of textmining with Jane Austen novels and extend it to a new corpus and a new lexicon.  I'll also bring in a new lexicon for sentiment analysis in another file.
 
 # The legal bit
 
@@ -231,24 +227,3 @@ tidy_books %>%
   slice_max(ratio, n = 1) %>%
   ungroup()
 ```
-
-# Cartman and Reddit
-
-First things first: we load the data described above.  The lexicons we will be comparing represent feelings associated with the 5000 most common words (minus stop words) on r/AskMen, r/AskWomen, r/Parenting, and r/Anarcho_Capitalism.
-
-```{r}
-cartman <- read.csv("https://raw.githubusercontent.com/BobAdamsEE/SouthParkData/master/by-character/cartman.csv")
-
-# schema: <word> <average sentiment> <standard deviation>
-
-askmen <- ""
-askwomen <- ""
-parenting <- ""
-ancap <- ""
-```
-
-Which lexicon is most like Cartman's?
-
-Which subreddit community might have the most positive associations toward Eric Cartman?
-
-Which is the most negative?

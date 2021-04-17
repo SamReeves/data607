@@ -1,0 +1,136 @@
+---
+title: "Text Mining (Eric Cartman and Reddit)"
+author: "Sam Reeves"
+date: "4/17/2021"
+
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+I have found some domain specific lexicons created from some of the most popular reddit communites, made available by William Leif with an Apache License v2.0. https://github.com/williamleif/socialsent
+
+We will be using Eric Cartman's dialogue from seasons 1-19 of Southpark to compare these lexicons.  This information is available at https://github.com/BobAdamsEE/SouthParkData with the Attribution-Share Alike v3.0 unported license.
+
+# The crude data
+
+First things first: we load the data described above.  The lexicons we will be comparing represent feelings associated with the 5000 most common words (minus stop words) on r/AskMen, r/AskWomen, r/Parenting, r/MensRights, and r/Anarcho_Capitalism.
+
+```{r}
+library(dplyr)
+library(tm)
+library(tidytext)
+
+cartman <- read.csv("https://raw.githubusercontent.com/BobAdamsEE/SouthParkData/master/by-character/cartman.csv", header = FALSE)
+
+cartman<- cartman$V1 %>%
+  stringr::str_replace_all('\n', ' ')
+
+# schema: <word> <average sentiment> <standard deviation>
+
+askmen <- tibble(read.delim(
+  "https://raw.githubusercontent.com/TheWerefriend/data607/master/week10/AskMen.tsv", 
+  header = FALSE) %>%
+  select(-V3))
+
+askwomen <- tibble(read.delim(
+  "https://raw.githubusercontent.com/TheWerefriend/data607/master/week10/AskWomen.tsv",
+  header = FALSE) %>%
+  select(-V3))
+
+parenting <- tibble(read.delim(
+  "https://raw.githubusercontent.com/TheWerefriend/data607/master/week10/Parenting.tsv", 
+  header = FALSE) %>%
+  select(-V3))
+
+mensrights <- tibble(read.delim(
+  "https://raw.githubusercontent.com/TheWerefriend/data607/master/week10/MensRights.tsv", 
+  header = FALSE) %>%
+  select(-V3))
+
+ancap <- tibble(read.delim(
+  "https://raw.githubusercontent.com/TheWerefriend/data607/master/week10/Anarcho_Capitalism.tsv",
+  header = FALSE) %>%
+  select(-V3))
+```
+
+# The Eric Corpus
+
+First, we should create a corpus of Cartman's language, transform it a bit, and remove stopwords.  Stemming seems unhelpful.  Then we can make a document-term matrix...
+
+NOTE: This regular expression should remove the endings of anything with an apostrophe:
+"?:\\w*(?:['-](?!['])\w*)+|['].?\w)+"
+
+However, no permutation with varied amounts of \\\\\\\\\\\ will stop the errors.  There is a function in tm for removing punctuation.
+
+```{r}
+EC <- VCorpus(VectorSource(cartman)) %>%
+  tm_map(content_transformer(tolower)) %>%
+  tm_map(removeWords, stopwords("SMART")) %>%
+  tm_map(removePunctuation, ucp = TRUE)
+
+EMatrix <-  DocumentTermMatrix(EC)
+
+inspect(EMatrix)
+```
+Using different stopword lists effects the outcome a lot. Compare 
+
+```
+[1] "eh    got   free free  face  life  ahead    board   captain  climb aboard  search  tomorrow  every shore   try oh lord  try  carry  maymaynemay maymaynemay maymaynemay maymaynemay  gathering  angels appeared   head  sang  us  song  hope      said come sail away come sail away come sail away   lads come sail away come sail away come sail away    thought    angels    surprise  climbed   starship  headed   skies come sail away come sail away come sail away   lads come sail away come sail away come sail away   lads"
+```
+with
+
+```{r}
+EC$content[4616][[1]]$content
+```
+<<<<He's just singing "Come Sail Away" by Styx.>>>>
+
+# Reddit Vocabularies
+
+Which subreddit communities have the most positive/negative associations toward Eric Cartman's language?
+
+We weight Cartman's vocabulary by word count, and apply the sentiment score from each.
+
+```{r}
+ancapScore <- ancap %>%
+  inner_join(ancap) %>%
+  group_by(index = 'V1') %>%
+  summarize(sentiment = sum(V2)) %>%
+  mutate(method = "ancap")
+
+parentingScore <- parenting %>%
+  inner_join(parenting) %>%
+  group_by(index = 'V1') %>%
+  summarize(sentiment = sum(V2)) %>%
+  mutate(method = "parenting")
+
+askmenScore <- askmen %>%
+  inner_join(askmen) %>%
+  group_by(index = 'V1') %>%
+  summarize(sentiment = sum(V2)) %>%
+  mutate(method = "askmen")
+
+askwomenScore <- askwomen %>%
+  inner_join(askwomen) %>%
+  group_by(index = 'V1') %>%
+  summarize(sentiment = sum(V2)) %>%
+  mutate(method = "askwomen")
+
+mensrightsScore <- mensrights %>%
+  inner_join(mensrights) %>%
+  group_by(index = 'V1') %>%
+  summarize(sentiment = sum(V2)) %>%
+  mutate(method = "mensrights")
+
+mensrightsScore
+ancapScore
+askmenScore
+askwomenScore
+parentingScore
+```
+
+# Conclusions
+
+Apparently, Eric Cartman's vocabulary sits best with r/AskWomen, with a close second coming from r/Anarcho_Capitalism.  r/MensRights is extremely neutral on his speech, r/AskMen is negative, and r/Parenting hates him the most.  Who knew???
