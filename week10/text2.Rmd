@@ -18,7 +18,7 @@ We will be using Eric Cartman's dialogue from seasons 1-19 of Southpark to compa
 
 First things first: we load the data described above.  The lexicons we will be comparing represent feelings associated with the 5000 most common words (minus stop words) on r/AskMen, r/AskWomen, r/Parenting, r/MensRights, and r/Anarcho_Capitalism.
 
-```{r}
+```{r message=FALSE}
 library(dplyr)
 library(tm)
 library(tidytext)
@@ -124,13 +124,11 @@ mensrightsScore <- mensrights %>%
   summarize(sentiment = sum(V2)) %>%
   mutate(method = "mensrights")
 
-mensrightsScore
-ancapScore
-askmenScore
-askwomenScore
-parentingScore
+rbind(mensrightsScore, ancapScore, askmenScore, askwomenScore, parentingScore)[2:3]
 ```
 
 # Conclusions
 
 Apparently, Eric Cartman's vocabulary sits best with r/AskWomen, with a close second coming from r/Anarcho_Capitalism.  r/MensRights is extremely neutral on his speech, r/AskMen is negative, and r/Parenting hates him the most.  Who knew???
+
+
