@@ -1,0 +1,56 @@
+---
+title: "Spam Hunter"
+author: "Sam Reeves"
+date: "4/29/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### The Project
+
+We have been tasked with creating a model to correctly separate spam emails from ham emails.  Apparently, ham is industry jargon for the emails you actually want to receive.
+
+In order to collect some extra credit points, I'll be using the relatively new tidymodels package to build my model.
+
+### The Data
+
+SpamAssassin is an open-source project from Apache meant to enable system administrators to implement text analysis, Bayesian filtering, and other methods to help stamp out the global spamdemic.
+
+Version 3.4.6 was realeased on April 12 of this year, and it is the last update before the release of 4.0.  I found it helpful to read through the source code.  You guessed it, this release comes with an Apache v2.0 license:
+
+https://downloads.apache.org//spamassassin/source/Mail-SpamAssassin-3.4.6.tar.gz
+
+We will be loading some old datasets and not using the newest software.  They can be found here:
+
+https://spamassassin.apache.org/old/publiccorpus/
+
+```{r}
+library(data.table)
+
+spam1 <- "https://spamassassin.apache.org/old/publiccorpus/20030228_spam.tar.bz2"
+spam2 <- "https://spamassassin.apache.org/old/publiccorpus/20050311_spam_2.tar.bz2"
+
+easy_ham1 <- "https://spamassassin.apache.org/old/publiccorpus/20030228_easy_ham.tar.bz2"
+easy_ham2 <- "https://spamassassin.apache.org/old/publiccorpus/20030228_easy_ham_2.tar.bz2"
+hard_ham <- "https://spamassassin.apache.org/old/publiccorpus/20030228_hard_ham.tar.bz2"
+```
+
+```{r}
+spam <- "~/code/data607/project4/spam"
+ham <- "~/code/data607/project4/ham"
+
+
+temp <- tempfile()
+download.file(spam1, temp)
+unzip(bzfile(temp), exdir = ".")
+unlink(temp)
+```
+
+### The Model
+
+### Binary Categorization
+
+### Conclusions
