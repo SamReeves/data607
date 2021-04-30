@@ -27,27 +27,44 @@ We will be loading some old datasets and not using the newest software.  They ca
 
 https://spamassassin.apache.org/old/publiccorpus/
 
-```{r}
+```{r, message=FALSE}
 library(data.table)
+library(tidyverse)
+library(magrittr)
 
-spam1 <- "https://spamassassin.apache.org/old/publiccorpus/20030228_spam.tar.bz2"
-spam2 <- "https://spamassassin.apache.org/old/publiccorpus/20050311_spam_2.tar.bz2"
+spam_dir <- "/home/s/code/data607/project4/spam"
+ham_dir <- "/home/s/code/data607/project4/ham"
 
-easy_ham1 <- "https://spamassassin.apache.org/old/publiccorpus/20030228_easy_ham.tar.bz2"
-easy_ham2 <- "https://spamassassin.apache.org/old/publiccorpus/20030228_easy_ham_2.tar.bz2"
-hard_ham <- "https://spamassassin.apache.org/old/publiccorpus/20030228_hard_ham.tar.bz2"
+collect <- function(directory, spam = 1) {
+  df <- list.files(path = directory) %>%
+  as.data.frame() %>%
+  set_colnames("file") %>%
+  mutate(text = lapply(list.files(path = directory,
+                                  full.names = TRUE),
+                       read_lines)) %>%
+  unnest(c(text)) %>%
+  mutate(type = spam) %>%
+  group_by(file) %>%
+  mutate(text = paste(text, collapse = " ")) %>%
+  ungroup() %>%
+  distinct()
+  
+  return(df)
+}
+
+setwd(spam_dir)
+spam_list <- unzip("spam.zip", list = TRUE)
+unzip("spam.zip")
+spam <- collect(spam_dir, spam = 1)
+do.call(file.remove, spam_list)
+
+setwd(ham_dir)
+ham_list <- unzip("ham.zip", list = TRUE)
+unzip("ham.zip")
+ham <- collect(ham_dir, spam = 0)
+do.call(file.remove, ham_list)
 ```
 
-```{r}
-spam <- "~/code/data607/project4/spam"
-ham <- "~/code/data607/project4/ham"
-
-
-temp <- tempfile()
-download.file(spam1, temp)
-unzip(bzfile(temp), exdir = ".")
-unlink(temp)
-```
 
 ### The Model
 
