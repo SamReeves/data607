@@ -13,7 +13,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 We have been tasked with creating a model to correctly separate spam emails from ham emails.  Apparently, ham is industry jargon for the emails you actually want to receive.
 
-In order to collect some extra credit points, I'll be using the relatively new tidymodels package to build my model.
+We will try to build a model using boilerplate text analysis.  First, creating a corpus and document term matrix from the bank of labeled emails.
 
 ### The Data
 
@@ -23,46 +23,72 @@ Version 3.4.6 was realeased on April 12 of this year, and it is the last update 
 
 https://downloads.apache.org//spamassassin/source/Mail-SpamAssassin-3.4.6.tar.gz
 
-We will be loading some old datasets and not using the newest software.  They can be found here:
+We will be loading some old datasets and not using this software.  It's helpful to read through the source code.  The data can be found here:
 
 https://spamassassin.apache.org/old/publiccorpus/
 
 ```{r, message=FALSE}
-library(data.table)
 library(tidyverse)
 library(magrittr)
+library(tidytext)
+library(tm)
 
-spam_dir <- "/home/s/code/data607/project4/spam"
-ham_dir <- "/home/s/code/data607/project4/ham"
+hamURL <- "https://github.com/TheWerefriend/data607/raw/master/project4/ham.zip"
+spamURL <- "https://github.com/TheWerefriend/data607/raw/master/project4/spam.zip"
 
-collect <- function(directory, spam = 1) {
-  df <- list.files(path = directory) %>%
+collectMail <- function(zipURL, spamStatus) {
+  dir <- getwd()
+  temp <- tempfile()
+  download.file(zipURL, temp)
+  
+  file_list <- unzip(temp, list = TRUE)
+  unzip(temp)
+  
+  df <- list.files(path = dir) %>%
   as.data.frame() %>%
-  set_colnames("file") %>%
-  mutate(text = lapply(list.files(path = directory,
+  set_colnames("filename") %>%
+  mutate(text = lapply(list.files(path = dir,
                                   full.names = TRUE),
                        read_lines)) %>%
   unnest(c(text)) %>%
-  mutate(type = spam) %>%
-  group_by(file) %>%
+  mutate(type = spamStatus) %>%
+  group_by(filename) %>%
   mutate(text = paste(text, collapse = " ")) %>%
   ungroup() %>%
   distinct()
   
-  return(df)
+  unlink(temp)
+  do.call(file.remove, file_list)
+  return(tibble(df))
 }
+```
 
-setwd(spam_dir)
-spam_list <- unzip("spam.zip", list = TRUE)
-unzip("spam.zip")
-spam <- collect(spam_dir, spam = 1)
-do.call(file.remove, spam_list)
+Here we just call the collectMail function on each zip file to create tibbles of spam and ham email.
 
-setwd(ham_dir)
-ham_list <- unzip("ham.zip", list = TRUE)
-unzip("ham.zip")
-ham <- collect(ham_dir, spam = 0)
-do.call(file.remove, ham_list)
+```{r, message=FALSE, warning=FALSE}
+#ham <- collectMail(hamURL, spamStatus = 0)
+spam <- collectMail(spamURL, spamStatus = 1)
+```
+
+We want to create a document term matrix using the tm package (like in the Eric Cartman meets Reddit project...) and use this to train our model.
+
+```{r}
+transformMail <- function(mail) {
+  transformedCorpus <- VCorpus(VectorSource(mail$text)) %>%
+  tm_map(removePunctuation, ucp = TRUE) %>%
+  tm_map(removeNumbers) %>%
+  tm_map(content_transformer(tolower)) %>%
+  tm_map(removeWords, stopwords("SMART")) %>%
+  stemDocument()
+  
+  return(transformedCorpus)
+  }
+
+```
+
+```{r}
+spamCorpus <- transformMail(spam)
+#hamCorpus <- transformMail(ham)
 ```
 
 
