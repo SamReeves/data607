@@ -19,9 +19,7 @@ We will try to build a model using boilerplate text analysis.  First, creating a
 
 SpamAssassin is an open-source project from Apache meant to enable system administrators to implement text analysis, Bayesian filtering, and other methods to help stamp out the global spamdemic.
 
-Version 3.4.6 was realeased on April 12 of this year, and it is the last update before the release of 4.0.  I found it helpful to read through the source code.  You guessed it, this release comes with an Apache v2.0 license:
-
-https://downloads.apache.org//spamassassin/source/Mail-SpamAssassin-3.4.6.tar.gz
+Version 3.4.6 was realeased on April 12 of this year, and it is the last update before the release of 4.0.  I found it helpful to read through the source code.  You guessed it, this release comes with an Apache v2.0 license: https://tinyurl.com/ryfnrwhx
 
 We will be loading some old datasets and not using this software.  It's helpful to read through the source code.  The data can be found here:
 
@@ -32,68 +30,146 @@ library(tidyverse)
 library(magrittr)
 library(tidytext)
 library(tm)
+library(tidymodels)
 
-hamURL <- "https://github.com/TheWerefriend/data607/raw/master/project4/ham.zip"
-spamURL <- "https://github.com/TheWerefriend/data607/raw/master/project4/spam.zip"
+set.seed(1337)
 
-collectMail <- function(zipURL, spamStatus) {
+hamURL <- 
+  "https://github.com/TheWerefriend/data607/raw/master/project4/ham.zip"
+spamURL <- 
+  "https://github.com/TheWerefriend/data607/raw/master/project4/spam.zip"
+```
+
+
+```{r, message=FALSE}
+collectMail <- function(zipURL) {
+  # get the working directory and the file
   dir <- getwd()
   temp <- tempfile()
   download.file(zipURL, temp)
   
-  file_list <- unzip(temp, list = TRUE)
+  # get a list of the files in the archive, unzip to WD
+  fileList <- unzip(temp, list = TRUE)
   unzip(temp)
   
+  # read the files into a dataframe, preserve column for filename
   df <- list.files(path = dir) %>%
   as.data.frame() %>%
   set_colnames("filename") %>%
-  mutate(text = lapply(list.files(path = dir,
-                                  full.names = TRUE),
+  mutate(text = lapply(list.files(path = dir, full.names = TRUE),
                        read_lines)) %>%
   unnest(c(text)) %>%
-  mutate(type = spamStatus) %>%
   group_by(filename) %>%
   mutate(text = paste(text, collapse = " ")) %>%
   ungroup() %>%
   distinct()
   
+  # clean up the WD, return a tibble
   unlink(temp)
-  do.call(file.remove, file_list)
+  do.call(file.remove, fileList)
   return(tibble(df))
 }
 ```
 
-Here we just call the collectMail function on each zip file to create tibbles of spam and ham email.
-
-```{r, message=FALSE, warning=FALSE}
-#ham <- collectMail(hamURL, spamStatus = 0)
-spam <- collectMail(spamURL, spamStatus = 1)
-```
-
-We want to create a document term matrix using the tm package (like in the Eric Cartman meets Reddit project...) and use this to train our model.
+We want to create a document term matrix using the tm package (like in the Eric Cartman meets Reddit project...) and use this to train our model.  First we have to apply some preprocessing to create a corpus.
 
 ```{r}
 transformMail <- function(mail) {
+  # generate a Corpus and return it
   transformedCorpus <- VCorpus(VectorSource(mail$text)) %>%
   tm_map(removePunctuation, ucp = TRUE) %>%
   tm_map(removeNumbers) %>%
   tm_map(content_transformer(tolower)) %>%
   tm_map(removeWords, stopwords("SMART")) %>%
-  stemDocument()
+  tm_map(stemDocument, "english")
   
   return(transformedCorpus)
   }
+```
 
+Now, there are some invisible bugs here.  The calls were throwing encoding errors, and according to the linux functions encguess and uchardet, nearly all the files are encoded with US-ASCII, but some are not.  Instead of fighting all the encoding issues, for the sake of this project, I will throw out the ones that were not "encoded properly".
+
+```{r, message=FALSE, warning=FALSE}
+# remove badly encoded emails
+ham <- collectMail(hamURL) %>%
+  filter(validEnc(text))
+
+spam <- collectMail(spamURL) %>%
+  filter(validEnc(text))
+
+hamCorpus <- transformMail(ham)
+spamCorpus <- transformMail(spam)
+
+inspect(DocumentTermMatrix(hamCorpus))
+inspect(DocumentTermMatrix(spamCorpus))
+```
+There appear to be significant differences among these two matrices!  So... we have to combine the two sets with a column for spam status, and make a new document term matrix before training...  Maybe, I could have done these things in a more efficient order.
+
+```{r}
+mail <- rbind(ham %>% mutate(status = FALSE),
+              spam %>% mutate(status = TRUE))
+
+mail$status <- factor(mail$status)
+
+# Note: the sparse parameter will remove documents more sparse than x%
+combinedDTM <- transformMail(mail) %>%
+  DocumentTermMatrix() %>%
+  removeSparseTerms(sparse = 0.97)
 ```
 
 ```{r}
-spamCorpus <- transformMail(spam)
-#hamCorpus <- transformMail(ham)
+total <- combinedDTM %>%
+  as.matrix() %>%
+  as.data.frame() %>%
+  sapply(., as.numeric) %>%
+  as.data.frame() %>%
+  cbind(status = mail$status)
 ```
-
 
 ### The Model
 
-### Binary Categorization
+We split the data:
+```{r}
+split <- initial_split(total, strata = status, p = 0.67)
+trainer <- training(split)
+tester <- testing(split)
+```
+
+We define the model with a recipe:
+```{r}
+spamRecipe <- recipe(status ~ ., data = trainer) %>%
+  step_center(all_predictors()) %>%
+  step_scale(all_predictors()) %>%
+  prep(training = trainer)
+
+spamTrain <- juice(spamRecipe)
+spamTest <- bake(spamRecipe, tester)
+```
+
+We fit the model:
+```{r}
+spamModel <- rand_forest(mode = "classification") %>%
+  set_engine("ranger")
+
+spamFit <- spamModel %>%
+  fit(status ~ ., data = tester)
+```
+
+We evaluate the results:
+```{r}
+results <- spamTest %>%
+  select(status) %>%
+  mutate(predicted = factor(ifelse
+                            (spamFit$fit$predictions[,1] < 0.5,
+                              TRUE, FALSE)))
+
+precision(results, truth = status, estimate = predicted)
+
+recall(results, truth = status, estimate = predicted)
+
+f_meas(results, truth = status, estimate = predicted)
+```
 
 ### Conclusions
+
+It worked!  We have a pretty solid spam classifier based on the easy and hard ham sets and both spam sets described in the introduction.  Room for improvement: we did not use all the data.  This will not work on emails encoded by a method other than UTF-8.
